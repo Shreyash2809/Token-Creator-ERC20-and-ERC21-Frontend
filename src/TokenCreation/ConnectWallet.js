@@ -20,26 +20,10 @@ init({
       label: "Ethereum Mainnet",
       rpcUrl,
     },
-    {
-      id: 42161,
-      token: "ARB-ETH",
-      label: "Arbitrum One",
-      rpcUrl: "https://rpc.ankr.com/arbitrum",
-    },
-    {
-      id: "0xa4ba",
-      token: "ARB",
-      label: "Arbitrum Nova",
-      rpcUrl: "https://nova.arbitrum.io/rpc",
-    },
-    {
-      id: "0x2105",
-      token: "ETH",
-      label: "Base",
-      rpcUrl: "https://mainnet.base.org",
-    },
   ],
 });
+
+let EthersProvider;
 
 const ConnectWallet = () => {
   const [{ wallet, connecting }, connect, disconnect] = useConnectWallet();
@@ -47,8 +31,10 @@ const ConnectWallet = () => {
 
   useEffect(() => {
     if (wallet) {
-      // ethers v6 uses 'new ethers.BrowserProvider'
-      setEthersProvider(new ethers.BrowserProvider(wallet.provider, "any"));
+      const provider = new ethers.providers.Web3Provider(wallet.provider); // v5 syntax
+      setEthersProvider(provider);
+      EthersProvider = provider; // Export for external use
+      console.log("EthersProvider set:", EthersProvider);
     } else {
       setEthersProvider(null);
     }
@@ -56,14 +42,14 @@ const ConnectWallet = () => {
 
   return (
     <div>
-      <Button variant="outlined" size="small"
+      <Button
+        variant="outlined"
+        size="small"
         disabled={connecting}
         onClick={() => {
           if (wallet) {
-            // Handle disconnect
             disconnect(wallet);
           } else {
-            // Handle connect
             connect();
           }
         }}
@@ -71,7 +57,6 @@ const ConnectWallet = () => {
         {connecting ? "connecting..." : wallet ? "disconnect" : "connect"}
       </Button>
 
-      {/* Optional: Display some wallet information */}
       {wallet && (
         <div>
           <p>Connected to: {wallet.label}</p>
@@ -83,3 +68,4 @@ const ConnectWallet = () => {
 };
 
 export default ConnectWallet;
+export { EthersProvider };
